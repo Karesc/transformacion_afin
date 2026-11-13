@@ -1,0 +1,985 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Transformaciones Afines | Mazur-Ulam</title>
+
+<style>
+:root {
+    --bg: #0b1120;
+    --panel: #131e32;
+    --panel2: #192943;
+    --text: #edf3ff;
+    --muted: #a8b8d0;
+    --cyan: #50d9e9;
+    --purple: #b49aff;
+    --orange: #ffb86b;
+    --green: #78e0b0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.7;
+}
+
+header {
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 20px;
+    background:
+      radial-gradient(circle at 50% 30%,
+      #263d65 0%, #111c30 45%, #0b1120 80%);
+}
+
+header h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    line-height: 1.15;
+    margin-bottom: 20px;
+}
+
+header h1 span {
+    color: var(--cyan);
+}
+
+header p {
+    max-width: 700px;
+    color: var(--muted);
+    font-size: 1.15rem;
+}
+
+.math-title {
+    color: var(--purple);
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    margin: 25px 0;
+}
+
+.button {
+    display: inline-block;
+    background: var(--cyan);
+    color: #091322;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 9px;
+    font-weight: bold;
+    margin-top: 25px;
+    transition: .2s;
+}
+
+.button:hover {
+    transform: translateY(-3px);
+    background: white;
+}
+
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #0e192c;
+    padding: 14px;
+    text-align: center;
+    border-bottom: 1px solid #30415d;
+}
+
+nav a {
+    color: var(--muted);
+    text-decoration: none;
+    margin: 0 12px;
+    font-size: .9rem;
+}
+
+nav a:hover {
+    color: var(--cyan);
+}
+
+section {
+    max-width: 1100px;
+    margin: auto;
+    padding: 85px 25px;
+}
+
+h2 {
+    font-size: 2rem;
+    color: var(--cyan);
+    margin-bottom: 25px;
+}
+
+h3 {
+    color: var(--purple);
+    margin: 20px 0 10px;
+}
+
+p {
+    margin-bottom: 16px;
+    color: var(--muted);
+}
+
+.formula {
+    background: var(--panel2);
+    padding: 25px;
+    text-align: center;
+    border-radius: 12px;
+    margin: 25px 0;
+    border-left: 4px solid var(--cyan);
+    font-size: 1.3rem;
+    overflow-x: auto;
+}
+
+.card {
+    background: var(--panel);
+    padding: 25px;
+    border-radius: 15px;
+    margin: 20px 0;
+    border: 1px solid #2b3b55;
+}
+
+.highlight {
+    color: var(--cyan);
+    font-weight: bold;
+}
+
+.purple {
+    color: var(--purple);
+}
+
+.orange {
+    color: var(--orange);
+}
+
+#canvas {
+    width: 100%;
+    display: block;
+    background: #091323;
+    border-radius: 12px;
+    border: 1px solid #334968;
+}
+
+.lab {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+}
+
+.controls {
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.control {
+    margin: 15px 0;
+}
+
+.control label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--cyan);
+    margin-top: 8px;
+}
+
+button {
+    padding: 10px 14px;
+    background: var(--panel2);
+    color: var(--text);
+    border: 1px solid #425b7e;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px 2px;
+}
+
+button:hover {
+    background: #294365;
+}
+
+.primary {
+    background: var(--cyan);
+    color: #071322;
+    font-weight: bold;
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 15px 0;
+    font-size: .9rem;
+    color: var(--muted);
+}
+
+.dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.theorem {
+    border: 1px solid var(--purple);
+    background: #19172d;
+    padding: 30px;
+    border-radius: 15px;
+    margin: 25px 0;
+}
+
+footer {
+    text-align: center;
+    padding: 35px;
+    color: var(--muted);
+    border-top: 1px solid #30415d;
+}
+
+@media(max-width: 800px) {
+    .lab {
+        grid-template-columns: 1fr;
+    }
+
+    nav a {
+        margin: 0 5px;
+        font-size: .8rem;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Transformaciones <span>Afines</span></h1>
+
+    <p>
+        De la estructura lineal de los espacios vectoriales
+        a la geometría de las isometrías.
+    </p>
+
+    <div class="math-title">
+        f(x) = T(x) + b
+    </div>
+
+    <p>
+        Una transformación afín combina una transformación
+        lineal con una traslación.
+    </p>
+
+    <a href="#concepto" class="button">
+        Explorar el concepto ↓
+    </a>
+</header>
+
+<nav>
+    <a href="#concepto">Concepto</a>
+    <a href="#laboratorio">Laboratorio</a>
+    <a href="#teorema">Mazur-Ulam</a>
+    <a href="#conclusion">Conclusiones</a>
+</nav>
+
+<!-- CONCEPTO -->
+
+<section id="concepto">
+
+<h2>1. ¿Qué es una transformación afín?</h2>
+
+<p>
+Una transformación afín permite relacionar dos espacios
+afines mediante una transformación lineal y una traslación.
+A diferencia de una transformación lineal, no necesariamente
+preserva el origen.
+</p>
+
+<div class="formula">
+    f : V → W
+    <br><br>
+    f(x) = T(x) + b
+</div>
+
+<p>Donde:</p>
+
+<div class="card">
+    <p>
+        <span class="highlight">T : V → W</span>
+        es una transformación lineal.
+    </p>
+
+    <p>
+        <span class="highlight">b ∈ W</span>
+        es un vector fijo que representa la traslación.
+    </p>
+
+    <p>
+        <span class="highlight">f : V → W</span>
+        es la transformación afín.
+    </p>
+</div>
+
+<h3>Representación matricial</h3>
+
+<p>
+En espacios vectoriales de dimensión finita, si elegimos
+coordenadas, podemos representar la transformación lineal
+mediante una matriz A.
+</p>
+
+<div class="formula">
+    f(x) = Ax + b
+</div>
+
+<p>
+En el plano, escribimos:
+</p>
+
+<div class="formula">
+    A =
+    [ a  b ] &nbsp;&nbsp; y &nbsp;&nbsp;
+    [ c  d ]
+    <br><br>
+    x =
+    [ x₁ ] &nbsp;&nbsp; y &nbsp;&nbsp;
+    [ x₂ ]
+    <br><br>
+    f(x) = Ax + b
+</div>
+
+<p>
+La matriz modifica la geometría de los vectores,
+mientras que el vector b desplaza la figura completa.
+</p>
+
+</section>
+
+<!-- LABORATORIO -->
+
+<section id="laboratorio">
+
+<h2>2. Laboratorio de transformaciones afines</h2>
+
+<p>
+Modifica los coeficientes de la matriz y el vector de
+traslación. Observa cómo cambia la cuadrícula y cómo
+se transforma un punto que se desplaza sobre el plano.
+</p>
+
+<div class="legend">
+    <span><i class="dot" style="background:#50d9e9"></i>Plano original</span>
+    <span><i class="dot" style="background:#b49aff"></i>Plano transformado</span>
+    <span><i class="dot" style="background:#ffb86b"></i>Punto móvil</span>
+</div>
+
+<div class="lab">
+
+    <div>
+        <canvas id="canvas" width="720" height="580"></canvas>
+
+        <div class="card">
+            <h3>La transformación actual</h3>
+
+            <div id="equation" class="formula"></div>
+
+            <p id="description">
+                Observa el efecto de la matriz sobre
+                la cuadrícula.
+            </p>
+        </div>
+
+        <button class="primary" onclick="toggleAnimation()">
+            Pausar / Reanudar animación
+        </button>
+
+        <button onclick="reset()">
+            Reiniciar
+        </button>
+    </div>
+
+    <div class="controls">
+
+        <h3>Matriz A</h3>
+
+        <div class="control">
+            <label>a <span id="va">1.0</span></label>
+            <input type="range" id="a" min="-2" max="2"
+                   step=".1" value="1">
+        </div>
+
+        <div class="control">
+            <label>b <span id="vb">0.4</span></label>
+            <input type="range" id="b" min="-2" max="2"
+                   step=".1" value="0.4">
+        </div>
+
+        <div class="control">
+            <label>c <span id="vc">-0.2</span></label>
+            <input type="range" id="c" min="-2" max="2"
+                   step=".1" value="-0.2">
+        </div>
+
+        <div class="control">
+            <label>d <span id="vd">1.0</span></label>
+            <input type="range" id="d" min="-2" max="2"
+                   step=".1" value="1">
+        </div>
+
+        <h3>Traslación b</h3>
+
+        <div class="control">
+            <label>b₁ <span id="vtx">1.0</span></label>
+            <input type="range" id="tx" min="-3" max="3"
+                   step=".1" value="1">
+        </div>
+
+        <div class="control">
+            <label>b₂ <span id="vty">0.5</span></label>
+            <input type="range" id="ty" min="-3" max="3"
+                   step=".1" value=".5">
+        </div>
+
+        <hr style="border-color:#30415d;margin:20px 0">
+
+        <h3>Ejemplos</h3>
+
+        <button onclick="setIsometry()">
+            Isometría
+        </button>
+
+        <button onclick="setAffine()">
+            Transformación afín
+        </button>
+
+        <button onclick="setIdentity()">
+            Identidad
+        </button>
+
+        <div class="card">
+            <p>
+                <strong>Determinante:</strong>
+            </p>
+            <div id="det" class="highlight">1</div>
+
+            <p>
+                El determinante permite analizar si la
+                transformación lineal es invertible y
+                cómo modifica áreas orientadas.
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+<!-- TEOREMA -->
+
+<section id="teorema">
+
+<h2>3. Teorema de Mazur-Ulam</h2>
+
+<p>
+Hasta ahora hemos estudiado transformaciones afines
+generales. Sin embargo, existe un resultado fundamental
+que relaciona las transformaciones afines con las
+isometrías.
+</p>
+
+<div class="theorem">
+
+    <h3>Teorema de Mazur-Ulam</h3>
+
+    <p>
+    Sean X e Y espacios normados reales y sea
+    f : X → Y una isometría sobreyectiva, es decir:
+    </p>
+
+    <div class="formula">
+        ||f(x)-f(y)|| = ||x-y||
+    </div>
+
+    <p>
+    para todo x,y ∈ X.
+    </p>
+
+    <p>
+    Entonces f es una transformación afín. En otras
+    palabras, existen una transformación lineal
+    T : X → Y y un vector b ∈ Y tales que:
+    </p>
+
+    <div class="formula">
+        f(x) = T(x) + b
+    </div>
+
+    <p>
+    Además, T es una isometría lineal:
+    </p>
+
+    <div class="formula">
+        ||T(x)-T(y)|| = ||x-y||
+    </div>
+
+</div>
+
+<h3>¿Qué significa geométricamente?</h3>
+
+<p>
+Una isometría conserva las distancias entre todos los
+puntos. Por tanto, no puede deformar arbitrariamente
+la geometría del espacio.
+</p>
+
+<p>
+En el plano euclidiano, las isometrías son composiciones
+de movimientos rígidos: traslaciones, rotaciones y
+reflexiones.
+</p>
+
+<div class="card">
+    <h3>La idea fundamental</h3>
+
+    <p>
+    Si una transformación conserva todas las distancias
+    y además es sobreyectiva, el teorema garantiza que
+    necesariamente puede escribirse como una parte lineal
+    más una traslación.
+    </p>
+
+    <div class="formula">
+        Isometría sobreyectiva
+        <br>
+        ↓
+        <br>
+        Transformación afín
+        <br>
+        ↓
+        <br>
+        T(x) + b
+    </div>
+</div>
+
+<h3>Una idea de la demostración: puntos medios</h3>
+
+<p>
+El teorema se demuestra estudiando cómo una isometría
+transforma los puntos medios de segmentos.
+</p>
+
+<p>
+Si m es el punto medio entre x e y, entonces:
+</p>
+
+<div class="formula">
+    m = (x+y)/2
+</div>
+
+<p>
+Se busca demostrar que:
+</p>
+
+<div class="formula">
+    f((x+y)/2) = (f(x)+f(y))/2
+</div>
+
+<p>
+Esta propiedad expresa que la transformación conserva
+los puntos medios. Para demostrarla rigurosamente,
+Mazur y Ulam utilizan reflexiones y la sobreyectividad,
+junto con un argumento de desplazamiento de puntos medios.
+</p>
+
+<p>
+Una vez establecido que f conserva puntos medios,
+se define:
+</p>
+
+<div class="formula">
+    T(x) = f(x)-f(0)
+</div>
+
+<p>
+Y se demuestra que T es lineal. Finalmente:
+</p>
+
+<div class="formula">
+    f(x) = T(x)+f(0)
+</div>
+
+</section>
+
+<!-- CONCLUSION -->
+
+<section id="conclusion">
+
+<h2>4. ¿Qué hemos aprendido?</h2>
+
+<div class="card">
+    <h3>Transformación lineal</h3>
+    <p>
+        Conserva el origen y respeta las combinaciones
+        lineales.
+    </p>
+    <div class="formula">
+        T(x)=Ax
+    </div>
+</div>
+
+<div class="card">
+    <h3>Transformación afín</h3>
+    <p>
+        Combina una transformación lineal con una
+        traslación.
+    </p>
+    <div class="formula">
+        f(x)=Ax+b
+    </div>
+</div>
+
+<div class="card">
+    <h3>Isometría afín</h3>
+    <p>
+        Conserva las distancias y es sobreyectiva.
+        El teorema de Mazur-Ulam garantiza su estructura
+        afín.
+    </p>
+    <div class="formula">
+        f(x)=T(x)+b
+    </div>
+</div>
+
+<p>
+La importancia del teorema radica en que conecta una
+propiedad geométrica, la conservación de distancias,
+con una estructura algebraica, la linealidad más
+una traslación.
+</p>
+
+</section>
+
+<footer>
+    <p>
+        Álgebra Lineal · Transformaciones Afines
+    </p>
+    <p>
+        Material didáctico de matemáticas
+    </p>
+</footer>
+
+<script>
+
+// =====================================
+// 1. CONFIGURACIÓN DEL LABORATORIO
+// =====================================
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const W = canvas.width;
+const H = canvas.height;
+
+const scale = 42;
+
+let running = true;
+let time = 0;
+
+const ids = ["a","b","c","d","tx","ty"];
+
+function getValues() {
+    return Object.fromEntries(
+        ids.map(id => [
+            id,
+            Number(document.getElementById(id).value)
+        ])
+    );
+}
+
+function updateValues() {
+
+    const p = getValues();
+
+    ids.forEach(id => {
+        document.getElementById("v"+id).textContent =
+            p[id].toFixed(1);
+    });
+
+    document.getElementById("det").textContent =
+        (p.a*p.d-p.b*p.c).toFixed(3);
+
+    document.getElementById("equation").innerHTML =
+        `f(x,y) = (${p.a}x + ${p.b}y + ${p.tx},
+        ${p.c}x + ${p.d}y + ${p.ty})`;
+}
+
+ids.forEach(id => {
+    document.getElementById(id).addEventListener(
+        "input", updateValues
+    );
+});
+
+// =====================================
+// 2. COORDENADAS DEL PLANO
+// =====================================
+
+function screen(x,y) {
+    return [
+        W/2 + x*scale,
+        H/2 - y*scale
+    ];
+}
+
+function transform(x,y,p) {
+    return [
+        p.a*x+p.b*y+p.tx,
+        p.c*x+p.d*y+p.ty
+    ];
+}
+
+// =====================================
+// 3. DIBUJAR EJES Y CUADRÍCULA
+// =====================================
+
+function drawGrid(p, transformed=false) {
+
+    ctx.save();
+
+    if(transformed) {
+        ctx.strokeStyle = "rgba(180,154,255,.65)";
+        ctx.lineWidth = 1.2;
+    } else {
+        ctx.strokeStyle = "rgba(80,217,233,.35)";
+        ctx.lineWidth = 1;
+    }
+
+    for(let i=-8;i<=8;i++) {
+
+        ctx.beginPath();
+
+        for(let j=-8;j<=8;j+=.1) {
+
+            let x,y;
+
+            if(transformed) {
+                [x,y] = transform(i,j,p);
+            } else {
+                x=i;
+                y=j;
+            }
+
+            const [sx,sy] = screen(x,y);
+
+            if(j===-8) ctx.moveTo(sx,sy);
+            else ctx.lineTo(sx,sy);
+        }
+
+        ctx.stroke();
+
+        ctx.beginPath();
+
+        for(let j=-8;j<=8;j+=.1) {
+
+            let x,y;
+
+            if(transformed) {
+                [x,y] = transform(j,i,p);
+            } else {
+                x=j;
+                y=i;
+            }
+
+            const [sx,sy] = screen(x,y);
+
+            if(j===-8) ctx.moveTo(sx,sy);
+            else ctx.lineTo(sx,sy);
+        }
+
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
+
+// =====================================
+// 4. EJES
+// =====================================
+
+function drawAxes() {
+
+    const [ox,oy] = screen(0,0);
+
+    ctx.strokeStyle = "#8294ae";
+    ctx.lineWidth = 1.5;
+
+    ctx.beginPath();
+    ctx.moveTo(0,oy);
+    ctx.lineTo(W,oy);
+    ctx.moveTo(ox,0);
+    ctx.lineTo(ox,H);
+    ctx.stroke();
+
+    ctx.fillStyle = "#edf3ff";
+    ctx.font = "15px sans-serif";
+
+    ctx.fillText("x",W-20,oy-10);
+    ctx.fillText("y",ox+10,20);
+}
+
+// =====================================
+// 5. PUNTO Y VECTOR MÓVIL
+// =====================================
+
+function drawPoint(x,y,color,label) {
+
+    const [sx,sy] = screen(x,y);
+
+    ctx.fillStyle = color;
+
+    ctx.beginPath();
+    ctx.arc(sx,sy,7,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText(label,sx+12,sy-12);
+}
+
+function drawVector(x,y,color) {
+
+    const [ox,oy] = screen(0,0);
+    const [sx,sy] = screen(x,y);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+
+    ctx.beginPath();
+    ctx.moveTo(ox,oy);
+    ctx.lineTo(sx,sy);
+    ctx.stroke();
+}
+
+// =====================================
+// 6. ANIMACIÓN PRINCIPAL
+// =====================================
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    if(running) time += .018;
+
+    const p = getValues();
+
+    ctx.clearRect(0,0,W,H);
+
+    // Plano original
+    drawGrid(p,false);
+
+    // Plano transformado
+    drawGrid(p,true);
+
+    // Ejes
+    drawAxes();
+
+    // Punto móvil en el plano original
+    const x = 2*Math.cos(time);
+    const y = 1.5*Math.sin(time);
+
+    // Imagen del punto
+    const [X,Y] = transform(x,y,p);
+
+    // Vectores
+    drawVector(x,y,"#50d9e9");
+    drawVector(X,Y,"#b49aff");
+
+    // Puntos
+    drawPoint(x,y,"#50d9e9","P");
+    drawPoint(X,Y,"#ffb86b","f(P)");
+
+    // Origen trasladado
+    drawPoint(p.tx,p.ty,"#78e0b0","f(0)");
+
+}
+
+animate();
+
+// =====================================
+// 7. PRESETS
+// =====================================
+
+function setValues(values) {
+
+    ids.forEach((id,i) => {
+        document.getElementById(id).value = values[i];
+    });
+
+    updateValues();
+}
+
+function setIsometry() {
+
+    const angle = Math.PI/5;
+
+    setValues([
+        Math.cos(angle),
+        -Math.sin(angle),
+        Math.sin(angle),
+        Math.cos(angle),
+        1,
+        .5
+    ]);
+
+    document.getElementById("description").textContent =
+        "Rotación más traslación. Se conservan las distancias.";
+}
+
+function setAffine() {
+
+    setValues([
+        1.3,.7,
+        -.3,.8,
+        1,.5
+    ]);
+
+    document.getElementById("description").textContent =
+        "Transformación afín general. La cuadrícula muestra una deformación lineal seguida de una traslación.";
+}
+
+function setIdentity() {
+
+    setValues([1,0,0,1,0,0]);
+
+    document.getElementById("description").textContent =
+        "Transformación identidad. Cada punto permanece en su posición.";
+}
+
+function reset() {
+    time = 0;
+    setAffine();
+}
+
+function toggleAnimation() {
+    running = !running;
+}
+
+updateValues();
+
+</script>
+
+</body>
+</html>
